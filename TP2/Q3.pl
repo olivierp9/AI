@@ -53,7 +53,6 @@ sibling(X,Y) :-
 sibling(X,Y) :- 
 	corequis(Y,Z),ancestor(X,Z),Z\==X,Z\==Y,Y\==X.
 	
-coursdemande(X,L) :- setof(Y,(sibling(Y,X)),L).
-coursdemande(X,L) :- setof(Y,(ancestor(Y,X)),L).
+coursAPrendreComplet(X,L) :- setof(Y,X^(sibling(Y,X);ancestor(Y,X)),L).
 
 

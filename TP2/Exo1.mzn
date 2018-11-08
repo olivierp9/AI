@@ -73,6 +73,19 @@ constraint
 ;
 output 
 [
-show(Zebre)
+"Zebre: ",
+show(Zebre),
+"\nEau: ",
+show(Eau),
+"\nAnglais: ",
+show(Anglais),
+"\nUkrainien: ",
+show(Ukrainien),
+"\nEspagnol: ",
+show(Espagnol),
+"\nNorvegien: ",
+show(Norvegien),
+"\nJaponais: ",
+show(Japonais)
 ]
 ;
