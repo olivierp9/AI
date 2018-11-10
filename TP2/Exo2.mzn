@@ -25,7 +25,7 @@ constraint
               home_away[i,j]=pv[i,tournament[i,j]]))/\%matrice home_away :1 quand joue home
     forall(i in 1..nbTeams)(
         forall(j in 1..nbTeams-1)(
-              away_home[i,j]!=home_away[i,j]))/\%matrice away_home :1 quand joue away
+              away_home[i,j]!=pv[i,tournament[i,j]]))/\%matrice away_home :1 quand joue away
     forall(i in 1..nbTeams)(
         forall(j in 1..nbTeams-4)(
               sum(k in 0..maxrow)(home_away[i,j+k])<4))/\ %pas plus de 3 match home de suite
@@ -33,11 +33,17 @@ constraint
         forall(j in 1..nbTeams-4)(
               sum(k in 0..maxrow)(away_home[i,j+k])<4));  %pas plus de 3 match away de suite
 solve satisfy;
-
+output [ "Matrice du tournois:\n"];
 output [ show(tournament[i,j])
             ++ (if j mod 13 == 0 then "\n" else " " endif) 
          | i in 1..nbTeams, j in 1..nbTeams-1 ];
 output [ "\n\n"];
+output [ "Matrice des matchs home:\n"];
 output [ show(home_away[i,j])
+            ++ (if j mod 13 == 0 then "\n" else " " endif) 
+         | i in 1..nbTeams, j in 1..nbTeams-1 ];
+output [ "\n\n"];
+output [ "Matrice des matchs away:\n"];
+output [ show(away_home[i,j])
             ++ (if j mod 13 == 0 then "\n" else " " endif) 
          | i in 1..nbTeams, j in 1..nbTeams-1 ];
