@@ -1,7 +1,6 @@
 include "globals.mzn"; 
 
 int: nbTeams;
-int: color = 7;
 int: maxrow = 3;
 
 
@@ -14,6 +13,8 @@ array[1..nbTeams,1..nbTeams-1] of var 0..1: away_home;
 constraint
     forall(i in 1..nbTeams)(
         alldifferent( [ tournament[i,j] | j in 1..nbTeams-1 ])) /\%toutes les equipes joue contre une équipe differente chaque semaine
+    forall(j in 1..nbTeams-1)(
+        alldifferent( [ tournament[i,j] | i in 1..nbTeams ])) /\%une equipe ne jouent pas contre plus dune equipe par semaine
     forall(i in 1..nbTeams)(
         forall(j in 1..nbTeams-1)(
               tournament[i,j] != i)) /\% une equipe ne joue pas contre elle meme
