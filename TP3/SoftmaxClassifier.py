@@ -26,8 +26,6 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
         self.threshold = threshold
         self.early_stopping = early_stopping
         
-
-
     """
         Public methods, can be called by the user
         To create a custom estimator in sklearn, we need to define the following methods:
@@ -65,29 +63,33 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
         
         prev_loss = np.inf
         self.losses_ = []
-
+        self.nb_example = X.shape[0]
         self.nb_feature = X.shape[1]
         self.nb_classes = len(np.unique(y))
 
         
+        X_bias = np.concatenate((np.ones((self.nb_example,1)),X),axis=1)
 
-        # X_bias =         
-        # self.theta_  = 
+        self.theta_ = np.random.rand(self.nb_feature+1,self.nb_classes)
         
 
-        for epoch in range( self.n_epochs):
+        for epoch in range(self.n_epochs):
+            z = np.matmul(X_bias,self.theta_)
 
-            # logits = 
-            # probabilities = 
+
+            probabilities = self._softmax(z)
             
             
-            # loss =                
-            # self.theta_ = 
+            loss = self._cost_function(probabilities,y)
+            self.theta_ = self.theta_-self.lr*self._get_gradient(X_bias, y,
+                                                                 probabilities)
             
-            # self.losses_.append(loss)
+            self.losses_.append(loss)
 
             if self.early_stopping:
-                pass
+                if abs(self.losses_[-1]-prev_loss)<self.threshold:
+                    return self
+                prev_loss = self.losses_[-1]
 
 
         return self
@@ -113,6 +115,9 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
     def predict_proba(self, X, y=None):
         try:
             getattr(self, "theta_")
+            X_bias = np.concatenate((np.ones((X.shape[0],1)),X),axis=1)
+            z = np.matmul(X_bias,self.theta_)
+            return self._softmax(z)
         except AttributeError:
             raise RuntimeError("You must train classifer before predicting data!")
         
@@ -137,6 +142,9 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
     def predict(self, X, y=None):
         try:
             getattr(self, "theta_")
+            X_bias = np.concatenate((np.ones((X.shape[0],1)),X),axis=1)
+            z = np.matmul(X_bias,self.theta_)
+            return np.argmax(self._softmax(z),axis=1)           
         except AttributeError:
             raise RuntimeError("You must train classifer before predicting data!")
         pass
@@ -163,7 +171,13 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
     """    
 
     def score(self, X, y=None):
-        pass
+        z = np.matmul(X,self.theta_)
+        probabilities = self._softmax(z)
+        yohe = self._one_hot(y)
+        probabilities[probabilities>(1-self.eps)]= 1-self.eps
+        probabilities[probabilities<(self.eps)]= self.eps
+        return -np.sum(np.multiply(yohe,np.log(probabilities)))/len(y)        
+        
     
 
     """
@@ -186,10 +200,14 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
         Probabilities
     """
     
-    def _cost_function(self,probabilities, y ): 
-        pass
-    
-
+    def _cost_function(self,probabilities, y): 
+        yohe = self._one_hot(y)
+        probabilities[probabilities>(1-self.eps)]= 1-self.eps
+        probabilities[probabilities<(self.eps)]= self.eps
+        J = -np.sum(np.multiply(yohe,np.log(probabilities)))/len(y)
+        if self.regularization:
+            J += np.sum(np.square(self.theta_[1:,:]))*self.alpha
+        return J
     
     """
         In :
@@ -209,7 +227,10 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
     
     
     def _one_hot(self,y):
-        pass
+        self.nb_classes=len(np.unique(y))
+        yohe = np.eye(self.nb_classes)[y]
+        return yohe
+        
 
 
     """
@@ -224,7 +245,10 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
     """
     
     def _softmax(self,z):
-        pass
+        z_exp = np.exp(z)
+        sum_z_exp = np.sum(z_exp,axis=1)
+        new_sum = sum_z_exp.reshape((len(sum_z_exp),1))
+        return z_exp/new_sum
     
 
     """
@@ -244,7 +268,12 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
     """
 
     def _get_gradient(self,X,y, probas):
-        
-        pass
+
+        yohe = self._one_hot(y)
+        grad = np.matmul(np.transpose(X),(probas-yohe))/len(y)
+        print(grad)
+        if self.regularization:
+            grad[1:,:] += np.sum(self.theta_[1:,:],axis=1)*self.alpha
+        return grad
     
     
