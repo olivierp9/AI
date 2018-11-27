@@ -5,7 +5,7 @@ import numpy as np
 class SoftmaxClassifier(BaseEstimator, ClassifierMixin):  
     """A softmax classifier"""
 
-    def __init__(self, lr = 0.1, alpha = 100, n_epochs = 1000, eps = 1.0e-5,threshold = 1.0e-10 , regularization = True, early_stopping = True):
+    def __init__(self, lr = 0.1, alpha = 10, n_epochs = 1000, eps = 1.0e-5,threshold = 1.0e-10 , regularization = True, early_stopping = True):
        
         """
             self.lr : the learning rate for weights update during gradient descent
@@ -271,9 +271,8 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
 
         yohe = self._one_hot(y)
         grad = np.matmul(np.transpose(X),(probas-yohe))/len(y)
-        print(grad)
         if self.regularization:
-            grad[1:,:] += np.sum(self.theta_[1:,:],axis=1)*self.alpha
+            grad[:,1:] += (self.theta_)[:,1:]
         return grad
     
     
