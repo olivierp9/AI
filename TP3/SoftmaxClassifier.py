@@ -5,7 +5,7 @@ import numpy as np
 class SoftmaxClassifier(BaseEstimator, ClassifierMixin):  
     """A softmax classifier"""
 
-    def __init__(self, lr = 0.1, alpha = 10, n_epochs = 1000, eps = 1.0e-5,threshold = 1.0e-10 , regularization = True, early_stopping = True):
+    def __init__(self, lr = 0.1, alpha = 100, n_epochs = 1000, eps = 1.0e-5,threshold = 1.0e-10 , regularization = True, early_stopping = True):
        
         """
             self.lr : the learning rate for weights update during gradient descent
@@ -67,7 +67,6 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
         self.nb_feature = X.shape[1]
         self.nb_classes = len(np.unique(y))
 
-        
         X_bias = np.concatenate((np.ones((self.nb_example,1)),X),axis=1)
 
         self.theta_ = np.random.rand(self.nb_feature+1,self.nb_classes)
@@ -206,7 +205,7 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
         probabilities[probabilities<(self.eps)]= self.eps
         J = -np.sum(np.multiply(yohe,np.log(probabilities)))/len(y)
         if self.regularization:
-            J += np.sum(np.square(self.theta_[1:,:]))*self.alpha
+            J += np.sum(np.square(self.theta_[1:,:]))*self.alpha/len(y)
         return J
     
     """
@@ -272,7 +271,7 @@ class SoftmaxClassifier(BaseEstimator, ClassifierMixin):
         yohe = self._one_hot(y)
         grad = np.matmul(np.transpose(X),(probas-yohe))/len(y)
         if self.regularization:
-            grad[:,1:] += (self.theta_)[:,1:]
+            grad[1:,:] += (self.theta_)[1:,:]*self.alpha/len(y)
         return grad
     
     
